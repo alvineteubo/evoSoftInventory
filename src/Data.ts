@@ -7,7 +7,7 @@ export const magasins: Magasin[] = [
 ];
 
 export const produits: Produit[] = [
-  { id: '1', nom: 'Ordinateur Portable', prix: 999.99 },
-  { id: '2', nom: 'Smartphone', prix: 599.99 },
-  { id: '3', nom: 'Casque Audio', prix: 149.99 },
+  { id: '1', nom: 'Ordinateur Portable', prix:1000 },
+  { id: '2', nom: 'Smartphone', prix: 30 },
+  { id: '3', nom: 'Casque Audio', prix: 20},
 ];
