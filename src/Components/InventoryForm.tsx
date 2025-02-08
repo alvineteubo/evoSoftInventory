@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import SaveIcon from '@mui/icons-material/Save';
+import React, { useState, useEffect } from "react";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import SaveIcon from "@mui/icons-material/Save";
 import {
   Select,
   MenuItem,
@@ -11,38 +11,41 @@ import {
   FormControl,
   InputLabel,
   Box,
-  TextField
-} from '@mui/material';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import { Magasin, Produit, Inventaire } from '../types/Inventory';
-import { magasins, produits } from '../Data';
+  TextField,
+  colors,
+} from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import { Store, Inventory } from "../types/Inventory";
+import { magasins, produits } from "../Data";
+import { saveInventory, loadInventory } from "../utils/LocalStorage";
+import "../components/InventoryForm.css";
 
-interface InventoryFormProps {
-  onSave: (entry: Inventaire) => void;
-}
-
-export const InventoryForm: React.FC<InventoryFormProps> = ({ onSave }) => {
+export const InventoryForm: React.FC = () => {
+  const navigate = useNavigate();
   const [date, setDate] = useState<dayjs.Dayjs | null>(dayjs());
-  const [produitId, setProduitId] = useState('');
+  const [produitId, setProduitId] = useState("");
   const [stocks, setStocks] = useState<Record<string, number>>(
-    magasins.reduce((acc, magasin) => ({
-      ...acc,
-      [magasin.id]: 0,
-    }), {})
+    magasins.reduce((acc, magasin) => ({ ...acc, [magasin.id]: 0 }), {})
   );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [inventory, setInventory] = useState<Inventory[]>([]);
+
+  useEffect(() => {
+    const savedInventory = loadInventory();
+    setInventory(savedInventory);
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-
-    if (!date) newErrors.date = 'Ce champ est requis';
-    if (!produitId) newErrors.produitId = 'Ce champ est requis';
+    if (!date) newErrors.date = "Ce champ est requis";
+    if (!produitId) newErrors.produitId = "Ce champ est requis";
 
     Object.entries(stocks).forEach(([magasinId, stock]) => {
       if (stock < 0) {
-        newErrors[`stock_${magasinId}`] = 'La quantité doit être positive';
+        newErrors[`stock_${magasinId}`] = "La quantité doit être positive";
       }
     });
 
@@ -50,37 +53,46 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ onSave }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSaveInventory = () => {
     if (!validateForm()) return;
 
-    const entry: Inventaire = {
-      date: date?.toISOString() || '',
+    const newEntry: Inventory = {
+      date: date?.toISOString() || "",
       produitId,
       stock: stocks,
     };
 
-    onSave(entry);
-    setProduitId('');
+    const newInventory = [...inventory, newEntry];
+    setInventory(newInventory);
+    saveInventory(newInventory);
+
+    setProduitId("");
     setStocks(
-      magasins.reduce((acc, magasin) => ({
-        ...acc,
-        [magasin.id]: 0,
-      }), {})
+      magasins.reduce((acc, magasin) => ({ ...acc, [magasin.id]: 0 }), {})
     );
   };
 
   return (
-    <Paper elevation={3} sx={{ padding: 3, marginBottom: 4 }}>
+    <div className="InventoryForm-container">
+      <Typography className="titlepage" fontWeight={900} fontSize={30}>
+        {" "}
+        Gestion des inventaires
+      </Typography>
       <Box display="flex" alignItems="center" gap={1} marginBottom={3}>
-        <AddCircleIcon className="h-6 w-6 text-blue-500" />
-        <Typography variant="h6">Nouvelle Entrée</Typography>
+        <AddCircleIcon sx={{ color: "blue" }} />
+        <Typography fontWeight={500} fontSize={15} color="black">
+          Nouveau inventaire
+        </Typography>
       </Box>
 
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSaveInventory();
+        }}
+      >
+        <Grid container spacing={4}>
+          <Grid item xs={6} sm={6}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label="Sélectionner une date"
@@ -137,19 +149,26 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ onSave }) => {
               />
             </Grid>
           ))}
-
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-            >
-              Enregistrer
-            </Button>
-          </Grid>
         </Grid>
+        <div className="button">
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+          >
+            Enregistrer
+          </Button>
+
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate("/inventoryList")}
+          >
+            liste des inventaires
+          </Button>
+        </div>
       </form>
-    </Paper>
+    </div>
   );
 };

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Paper,
   Table,
@@ -11,39 +10,26 @@ import {
   Button,
   Typography,
   Box,
-} from '@mui/material';
-import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
-import { Inventaire } from '../types/Inventory';
-import { magasins, produits } from '../Data';
-import { exportToCsv } from '../utils/LocalStorage';
+} from "@mui/material";
+import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
+import { Inventory } from "../types/Inventory";
+import { magasins, produits } from "../Data";
+import { exportToCsv, loadInventory } from "../utils/LocalStorage";
+import { useNavigate } from "react-router-dom";
+import "../components/InventoryList.css";
 
-interface InventoryListProps {
-  inventory: Inventaire[];
-}
+export const InventoryList: React.FC = () => {
+  const navigate = useNavigate();
+  const [inventory, setInventory] = useState<Inventory[]>([]);
 
-export const InventoryList: React.FC<InventoryListProps> = ({ inventory }) => {
-  const getProduitName = (produitId: string): string => {
-    const produit = produits.find((p) => p.id === produitId);  
-    return produit ? produit.nom : 'Produit Inconnu';
-  };
-  
-  const getMagasinName = (magasinId: string): string => {
-    const magasin = magasins.find((m) => m.id === magasinId);  
-    return magasin ? magasin.nom : 'Magasin Inconnu';
-  };
-  
-    const [isExporting, setIsExporting] = useState(false);
-  
-    const handleExport = () => {
-      if (isExporting) return; // Si déjà en train d'exporter, on arrête l'exécution
-      setIsExporting(true);
-      exportToCsv(inventory);
-      setIsExporting(false);
-    };
+  useEffect(() => {
+    const savedInventory = loadInventory();
+    setInventory(savedInventory);
+  }, []);
 
   return (
-    <Paper elevation={3} sx={{ marginTop: 4 }}>
+    <div className="inventoryListContainer">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -52,20 +38,25 @@ export const InventoryList: React.FC<InventoryListProps> = ({ inventory }) => {
         borderBottom="1px solid #e0e0e0"
       >
         <Box display="flex" alignItems="center" gap={1}>
-          <Inventory2Icon className="h-5 w-5 text-blue-500" />
-          <Typography variant="h6">Liste des Inventaires</Typography>
+          <Inventory2Icon style={{ fontSize: "20px", color: "#1976d2" }} />
+          <Typography fontWeight={700} fontSize={20}>
+            Liste des Inventaires
+          </Typography>
         </Box>
         <Button
           variant="outlined"
           startIcon={<DownloadForOfflineIcon />}
-          onClick={handleExport}
+          onClick={() => exportToCsv(inventory)}
         >
           Exporter CSV
         </Button>
       </Box>
 
-      <TableContainer>
-        <Table>
+      <TableContainer component={Paper}>
+        <Table
+          sx={{ minWidth: 1000, minHeight: 300 }}
+          aria-label="customized table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Date</TableCell>
@@ -78,9 +69,17 @@ export const InventoryList: React.FC<InventoryListProps> = ({ inventory }) => {
             {inventory.flatMap((entry) =>
               Object.entries(entry.stock).map(([magasinId, stock]) => (
                 <TableRow key={`${entry.date}-${entry.produitId}-${magasinId}`}>
-                  <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{getProduitName(entry.produitId)}</TableCell>
-                  <TableCell>{getMagasinName(magasinId)}</TableCell>
+                  <TableCell>
+                    {new Date(entry.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {produits.find((p) => p.id === entry.produitId)?.nom ||
+                      "Produit Inconnu"}
+                  </TableCell>
+                  <TableCell>
+                    {magasins.find((m) => m.id === magasinId)?.nom ||
+                      "Magasin Inconnu"}
+                  </TableCell>
                   <TableCell>{stock}</TableCell>
                 </TableRow>
               ))
@@ -88,6 +87,6 @@ export const InventoryList: React.FC<InventoryListProps> = ({ inventory }) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Paper>
+    </div>
   );
 };
