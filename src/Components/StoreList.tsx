@@ -1,7 +1,7 @@
-import React from 'react';
-import { List, ListItem, ListItemText, Typography } from '@mui/material';
-import { Magasin } from '../types/Inventory.ts';
-import { magasins } from '../Data';
+import React from "react";
+import { List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Magasin } from "../types/Inventory.ts";
+import { magasins } from "../Data.ts";
 
 const MagasinList: React.FC = () => {
   return (

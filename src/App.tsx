@@ -1,35 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import { Container, Typography, CircularProgress, Alert } from "@mui/material";
+import { InventoryForm } from "./components/InventoryForm";
+import { InventoryList } from "./components/InventoryList";
+import { Inventaire } from "./types/Inventory";
+import { api } from "./utils/api";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [inventory, setInventory] = useState<Inventaire[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadInventory();
+  }, []);
+
+  const loadInventory = async () => {
+    try {
+      const data = await api.getInventaires();
+      setInventory(data);
+      setError(null);
+    } catch (err) {
+      setError("Erreur lors du chargement des données");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveInventory = async (entry: Inventaire) => {
+    try {
+      const savedEntry = await api.addInventaire(entry);
+      setInventory([...inventory, savedEntry]);
+      setError(null);
+    } catch (err) {
+      setError("Erreur lors de l'enregistrement");
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Container sx={{ paddingTop: 4, paddingBottom: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Gestion d'Inventaire
+      </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ marginBottom: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <InventoryForm onSave={handleSaveInventory} />
+      <InventoryList inventory={inventory} />
+    </Container>
+  );
 }
 
-export default App
+export default App;
