@@ -3,35 +3,27 @@ import { Container, Typography, CircularProgress, Alert } from "@mui/material";
 import { InventoryForm } from "./components/InventoryForm";
 import { InventoryList } from "./components/InventoryList";
 import { Inventaire } from "./types/Inventory";
-import { api } from "./utils/api";
+import { saveInventory, loadInventory } from "./utils/LocalStorage"; // Cela semble inutilisé dans ton code, tu peux peut-être l'ignorer
+import { magasins, produits, inventaires } from "./Data"; // Importation des données statiques
 
 function App() {
-  const [inventory, setInventory] = useState<Inventaire[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [inventory, setInventory] = useState<Inventaire[]>([]); // Initialiser un tableau vide
+  const [loading, setLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
 
+  // Charger les données à partir de localStorage et les fusionner avec les données statiques
   useEffect(() => {
-    loadInventory();
+    const savedInventory = loadInventory(); // Charger les données sauvegardées depuis localStorage
+    const combinedInventory = [...inventaires, ...savedInventory]; // Fusionner les inventaires
+    setInventory(combinedInventory); // Mettre à jour l'état avec la combinaison des deux
   }, []);
 
-  const loadInventory = async () => {
+  const handleSaveInventory = (entry: Inventaire) => {
     try {
-      const data = await api.getInventaires();
-      setInventory(data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors du chargement des données");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveInventory = async (entry: Inventaire) => {
-    try {
-      const savedEntry = await api.addInventaire(entry);
-      setInventory([...inventory, savedEntry]);
-      setError(null);
+      const newInventory = [...inventory, entry]; // Ajouter le nouvel inventaire
+      setInventory(newInventory); // Mettre à jour l'état avec les nouveaux inventaires
+      saveInventory(newInventory); // Sauvegarder les données dans localStorage
+      setError(null); // Réinitialiser l'erreur
     } catch (err) {
       setError("Erreur lors de l'enregistrement");
       console.error(err);
@@ -54,7 +46,7 @@ function App() {
   }
 
   return (
-    <Container sx={{ paddingTop: 4, paddingBottom: 4 }}>
+    <Container sx={{ paddingTop: 4, paddingBottom: 4}}>
       <Typography variant="h4" gutterBottom>
         Gestion d'Inventaire
       </Typography>

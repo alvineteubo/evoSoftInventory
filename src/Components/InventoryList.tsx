@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import {
   Paper,
   Table,
@@ -23,18 +24,23 @@ interface InventoryListProps {
 
 export const InventoryList: React.FC<InventoryListProps> = ({ inventory }) => {
   const getProduitName = (produitId: string): string => {
-    const produit = produits.find((p) => p.id === produitId);
+    const produit = produits.find((p) => p.id === produitId);  
     return produit ? produit.nom : 'Produit Inconnu';
   };
-
+  
   const getMagasinName = (magasinId: string): string => {
-    const magasin = magasins.find((m) => m.id === magasinId);
+    const magasin = magasins.find((m) => m.id === magasinId);  
     return magasin ? magasin.nom : 'Magasin Inconnu';
   };
-
-  const handleExport = () => {
-    exportToCsv(inventory);
-  };
+  
+    const [isExporting, setIsExporting] = useState(false);
+  
+    const handleExport = () => {
+      if (isExporting) return; // Si déjà en train d'exporter, on arrête l'exécution
+      setIsExporting(true);
+      exportToCsv(inventory);
+      setIsExporting(false);
+    };
 
   return (
     <Paper elevation={3} sx={{ marginTop: 4 }}>
