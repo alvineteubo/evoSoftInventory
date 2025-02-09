@@ -172,7 +172,6 @@ export const InventoryList: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Confirmation Dialog for Delete */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
@@ -190,7 +189,6 @@ export const InventoryList: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
         <DialogTitle>Modifier l'inventaire</DialogTitle>
         <DialogContent>

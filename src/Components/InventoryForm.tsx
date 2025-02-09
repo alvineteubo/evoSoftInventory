@@ -16,14 +16,12 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
 import { Inventory } from "../types/Inventory";
 import { magasins, produits } from "../Data";
 import { saveInventory, loadInventory } from "../utils/LocalStorage";
 import "../components/InventoryForm.css";
 
 export const InventoryForm: React.FC = () => {
-  const navigate = useNavigate();
   const [date, setDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [produitId, setProduitId] = useState("");
   const [stocks, setStocks] = useState<Record<string, number>>(

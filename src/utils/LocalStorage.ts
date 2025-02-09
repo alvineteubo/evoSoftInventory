@@ -11,7 +11,6 @@ export const loadInventory = (): Inventory[] => {
   return data ? JSON.parse(data) : [];
 };
 
-//export csv
 export const exportToCsv = (inventory: Inventory[]): void => {
   if (inventory.length === 0) return;
 
