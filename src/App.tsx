@@ -1,5 +1,8 @@
-import React from "react";
-import { createBrowserRouter, RouterProvider, redirect } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  redirect,
+} from "react-router-dom";
 import { InventoryForm } from "./components/InventoryForm";
 import { InventoryList } from "./components/InventoryList";
 

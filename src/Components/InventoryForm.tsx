@@ -11,14 +11,13 @@ import {
   InputLabel,
   Box,
   TextField,
-
 } from "@mui/material";
 
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import { Store, Inventory } from "../types/Inventory";
+import { Inventory } from "../types/Inventory";
 import { magasins, produits } from "../Data";
 import { saveInventory, loadInventory } from "../utils/LocalStorage";
 import "../components/InventoryForm.css";
@@ -70,6 +69,7 @@ export const InventoryForm: React.FC = () => {
     setStocks(
       magasins.reduce((acc, magasin) => ({ ...acc, [magasin.id]: 0 }), {})
     );
+    window.location.reload();
   };
 
   return (
@@ -159,8 +159,6 @@ export const InventoryForm: React.FC = () => {
           >
             Enregistrer
           </Button>
-
-          
         </div>
       </form>
     </div>

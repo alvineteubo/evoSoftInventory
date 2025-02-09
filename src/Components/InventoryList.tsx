@@ -15,22 +15,29 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  TextField,
 } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import { Inventory } from "../types/Inventory";
 import { magasins, produits } from "../Data";
-import { exportToCsv, loadInventory } from "../utils/LocalStorage";
+import {
+  exportToCsv,
+  loadInventory,
+  saveInventory,
+} from "../utils/LocalStorage";
 import { useNavigate } from "react-router-dom";
 import "../components/InventoryList.css";
 
 export const InventoryList: React.FC = () => {
   const navigate = useNavigate();
   const [inventory, setInventory] = useState<Inventory[]>([]);
-  const [selectedItem, setSelectedItem] = useState<Inventory| null> (null)
-  const [openDialog, setOpenDialog]= useState(false);
+  const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editedQuantity, setEditedQuantity] = useState<number | string>("");
 
   useEffect(() => {
     const savedInventory = loadInventory();
@@ -39,35 +46,57 @@ export const InventoryList: React.FC = () => {
 
   const handleDelete = () => {
     if (selectedItem) {
-      const newInventory = inventory.map((entry) => {
-        if (entry.date === selectedItem.date && entry.produitId === selectedItem.produitId) {
-          const newStock = { ...entry.stock };
-          delete newStock[selectedItem.magasinId]; // Supprimer uniquement le stock du magasin ciblé
-  
-          // Si après suppression, il ne reste plus de stock pour ce produit à cette date, on l'enlève complètement
-          if (Object.keys(newStock).length === 0) {
-            return null;
+      const newInventory = inventory
+        .map((entry) => {
+          if (
+            entry.date === selectedItem.date &&
+            entry.produitId === selectedItem.produitId
+          ) {
+            const newStock = { ...entry.stock };
+            delete newStock[selectedItem.magasinId];
+            return Object.keys(newStock).length > 0
+              ? { ...entry, stock: newStock }
+              : null;
           }
-  
+          return entry;
+        })
+        .filter(Boolean) as Inventory[];
+
+      setInventory(newInventory);
+      saveInventory(newInventory);
+      setOpenDialog(false);
+      setSelectedItem(null);
+    }
+  };
+
+  const handleEdit = () => {
+    if (selectedItem && editedQuantity !== "") {
+      const newInventory = inventory.map((entry) => {
+        if (
+          entry.date === selectedItem.date &&
+          entry.produitId === selectedItem.produitId
+        ) {
+          const newStock = {
+            ...entry.stock,
+            [selectedItem.magasinId]: +editedQuantity,
+          };
           return { ...entry, stock: newStock };
         }
         return entry;
-      }).filter(Boolean) as Inventory[]; // Supprime les éléments `null`
-  
+      });
+
       setInventory(newInventory);
       saveInventory(newInventory);
-      setDeleteDialogOpen(false);
-      setselectedItem(null);
+      setOpenEditDialog(false);
+      setSelectedItem(null);
     }
   };
-  
 
   return (
     <div className="inventoryListContainer">
       <Box
         display="flex"
         justifyContent="space-between"
-        alignItems="center"
         padding={2}
         borderBottom="1px solid #e0e0e0"
       >
@@ -87,10 +116,7 @@ export const InventoryList: React.FC = () => {
       </Box>
 
       <TableContainer component={Paper}>
-        <Table
-          sx={{ minWidth: 900, minHeight: 200 }}
-          aria-label="customized table"
-        >
+        <Table sx={{ minWidth: 900 }} aria-label="inventory table">
           <TableHead>
             <TableRow>
               <TableCell>Date</TableCell>
@@ -119,15 +145,19 @@ export const InventoryList: React.FC = () => {
                   <TableCell>
                     <Button
                       startIcon={<EditIcon />}
-                      
                       color="primary"
+                      onClick={() => {
+                        setSelectedItem({ ...entry, magasinId });
+                        setEditedQuantity(stock);
+                        setOpenEditDialog(true);
+                      }}
                     >
                       Éditer
                     </Button>
                     <Button
                       startIcon={<DeleteIcon />}
                       onClick={() => {
-                        setSelectedItem(entry);
+                        setSelectedItem({ ...entry, magasinId });
                         setOpenDialog(true);
                       }}
                       color="secondary"
@@ -135,17 +165,20 @@ export const InventoryList: React.FC = () => {
                       Supprimer
                     </Button>
                   </TableCell>
-                
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Confirmation Dialog for Delete */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
-          <DialogContentText>Êtes-vous sûr de vouloir supprimer cet inventaire ?</DialogContentText>
+          <DialogContentText>
+            Êtes-vous sûr de vouloir supprimer cet inventaire ?
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)} color="primary">
@@ -153,6 +186,32 @@ export const InventoryList: React.FC = () => {
           </Button>
           <Button onClick={handleDelete} color="secondary">
             Oui
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
+        <DialogTitle>Modifier l'inventaire</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Veuillez modifier la quantité de ce produit.
+          </DialogContentText>
+          <TextField
+            label="Quantité"
+            type="number"
+            fullWidth
+            value={editedQuantity}
+            onChange={(e) => setEditedQuantity(e.target.value)}
+            margin="dense"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleEdit} color="secondary">
+            Enregistrer
           </Button>
         </DialogActions>
       </Dialog>
