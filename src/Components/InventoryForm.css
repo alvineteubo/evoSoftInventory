@@ -1,29 +1,23 @@
 body {
-    background-color: #f8f4f4;
-    margin: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  background-color: #f8f4f4;
+  margin: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .InventoryForm-container {
-    background-color: #F8F4F4;
-    flex: 1;
-    margin: 20px;
-    height: 400px;
+  background-color: #f8f4f4;
+  flex: 1;
+  margin: 20px;
+  height: 400px;
 }
-.titlepage{
-    color: black;
-    
-    text-align: center;
+.titlepage {
+  color: black;
+
+  text-align: center;
 }
-.button{
-    display: flex;
-    justify-content: center;
-   margin-top: 150px;
-   gap: 70px;
+.button {
   
-
+  margin-top: 20px;
+ 
 }
-
-
-

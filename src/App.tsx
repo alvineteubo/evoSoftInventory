@@ -6,15 +6,16 @@ import { InventoryList } from "./components/InventoryList";
 const router = createBrowserRouter([
   {
     path: "",
-    loader: () => redirect("/inventoryForm"),
+    loader: () => redirect("/inventory"),
   },
   {
-    path: "/inventoryForm",
-    element: <InventoryForm />,
-  },
-  {
-    path: "/inventoryList",
-    element: <InventoryList />,
+    path: "/inventory",
+    element: (
+      <>
+        <InventoryForm />
+        <InventoryList />
+      </>
+    ),
   },
 ]);
 

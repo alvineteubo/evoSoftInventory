@@ -10,7 +10,14 @@ import {
   Button,
   Typography,
   Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import { Inventory } from "../types/Inventory";
@@ -22,11 +29,38 @@ import "../components/InventoryList.css";
 export const InventoryList: React.FC = () => {
   const navigate = useNavigate();
   const [inventory, setInventory] = useState<Inventory[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Inventory| null> (null)
+  const [openDialog, setOpenDialog]= useState(false);
 
   useEffect(() => {
     const savedInventory = loadInventory();
     setInventory(savedInventory);
   }, []);
+
+  const handleDelete = () => {
+    if (selectedItem) {
+      const newInventory = inventory.map((entry) => {
+        if (entry.date === selectedItem.date && entry.produitId === selectedItem.produitId) {
+          const newStock = { ...entry.stock };
+          delete newStock[selectedItem.magasinId]; // Supprimer uniquement le stock du magasin ciblé
+  
+          // Si après suppression, il ne reste plus de stock pour ce produit à cette date, on l'enlève complètement
+          if (Object.keys(newStock).length === 0) {
+            return null;
+          }
+  
+          return { ...entry, stock: newStock };
+        }
+        return entry;
+      }).filter(Boolean) as Inventory[]; // Supprime les éléments `null`
+  
+      setInventory(newInventory);
+      saveInventory(newInventory);
+      setDeleteDialogOpen(false);
+      setselectedItem(null);
+    }
+  };
+  
 
   return (
     <div className="inventoryListContainer">
@@ -54,7 +88,7 @@ export const InventoryList: React.FC = () => {
 
       <TableContainer component={Paper}>
         <Table
-          sx={{ minWidth: 1000, minHeight: 300 }}
+          sx={{ minWidth: 900, minHeight: 200 }}
           aria-label="customized table"
         >
           <TableHead>
@@ -63,6 +97,7 @@ export const InventoryList: React.FC = () => {
               <TableCell>Produit</TableCell>
               <TableCell>Magasin</TableCell>
               <TableCell>Quantité</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -81,12 +116,46 @@ export const InventoryList: React.FC = () => {
                       "Magasin Inconnu"}
                   </TableCell>
                   <TableCell>{stock}</TableCell>
+                  <TableCell>
+                    <Button
+                      startIcon={<EditIcon />}
+                      
+                      color="primary"
+                    >
+                      Éditer
+                    </Button>
+                    <Button
+                      startIcon={<DeleteIcon />}
+                      onClick={() => {
+                        setSelectedItem(entry);
+                        setOpenDialog(true);
+                      }}
+                      color="secondary"
+                    >
+                      Supprimer
+                    </Button>
+                  </TableCell>
+                
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </TableContainer>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Êtes-vous sûr de vouloir supprimer cet inventaire ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="primary">
+            Non
+          </Button>
+          <Button onClick={handleDelete} color="secondary">
+            Oui
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

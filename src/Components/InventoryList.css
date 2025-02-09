@@ -1,11 +1,11 @@
-
-.inventoryListContainer{
-  background-color: rgb(163, 189, 189); 
-  size: 400px; 
+.inventoryListContainer {
+  background-color: rgb(163, 189, 189);
+  size: 400px;
+  margin-bottom: 40px;
 }
-.tableTitle{
-    text-align: center;
+.tableTitle {
+  text-align: center;
 }
-.export-button{
-    margin-top: 300px;
+.export-button {
+  margin-top: 300px;
 }

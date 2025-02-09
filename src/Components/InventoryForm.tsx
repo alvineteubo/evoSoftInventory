@@ -7,13 +7,13 @@ import {
   Button,
   Grid,
   Typography,
-  Paper,
   FormControl,
   InputLabel,
   Box,
   TextField,
-  colors,
+
 } from "@mui/material";
+
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -160,13 +160,7 @@ export const InventoryForm: React.FC = () => {
             Enregistrer
           </Button>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => navigate("/inventoryList")}
-          >
-            liste des inventaires
-          </Button>
+          
         </div>
       </form>
     </div>
